@@ -1,43 +1,50 @@
 n = gets.to_i
 a = gets.split.map(&:to_i)
 
-# 思考の整理
-# とりあえず、重複してる数字が何かがわかる必要はある
-# 一旦ソートしてみるか
+# ただちゃんに教えてもらった。悔しい。
+# 「左からN番目の時の種類数はX」の配列を持つ
+# 詳細
+#   初登場する番号を持っておき、合計のカウントにプラス1する
+# 「右からN番目の時の種類数はX」の配列を持つ
+# 両端からカウントした値を足して、その中のマックスを調べる
 
-# 解き方
-# 1. 毎ループごとに両端の配列に対して累積和を実行し、その合計をとる
-# 2. 合計のカウント数を返す
+# # 2 5 6 5 2 1 7 9 7 2
+# [1, 2, 3, 3, 3, 4, 5, 6, 6, nil] # 左
+# [nil, 6, 6, 5, 4, 4, 3, 3, 2, 1] # 右
 
-# 1.の詳細
-# n回のループでループのインデックスで配列を分割する
-# それぞれ種類数の累積和で数を足す
+uniq_nums = {}
+max_index = a.count - 1
 
-maximum_count = 0
-
-def sum_class_count(array)
-  sum_types = {}
-
-  array.each do |s|
-    if sum_types[s].nil?
-      sum_types[s] = 1
-    else
-      sum_types[s] += 1
-    end
-  end
-
-  sum_types.keys.count
-end
-
+# 左から
+type_counts_from_left = []
 n.times do |i|
-  before_array = a[0..i]
-  after_array = a[(i + 1)..]
+  target_num = a[i]
+  uniq_nums[target_num] = 1 if uniq_nums[target_num].nil?
 
-  total_count = sum_class_count(before_array) + sum_class_count(after_array)
-
-  next unless maximum_count < total_count
-
-  maximum_count = total_count
+  type_counts_from_left << uniq_nums.size
 end
 
-puts maximum_count
+uniq_nums = {}
+# 右から
+type_counts_from_right = []
+n.times do |i|
+  target_num = a[max_index - i]
+  uniq_nums[target_num] = 1 if uniq_nums[target_num].nil?
+
+  type_counts_from_right << uniq_nums.size
+end
+
+type_counts_from_right = type_counts_from_right.sort.reverse
+
+max_count = 0
+n.times do |i|
+  break if i == max_index
+
+  left_num = type_counts_from_left[i]
+  right_num = type_counts_from_right[i + 1]
+  count = left_num + right_num
+
+  max_count = [max_count, count].max
+end
+
+puts max_count
